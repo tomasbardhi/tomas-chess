@@ -59,7 +59,6 @@ def decode_policy_output(policy_output):
     #return [move for move, _ in all_moves]
     return all_moves
 
-
 def square_to_coordinates(square):
     # square index (0-63) to notation ('a1')
     return chess.SQUARE_NAMES[square]
@@ -70,15 +69,24 @@ def decode_move(row, col, plane):
     promotion_piece = None
 
     if plane < 56:  # queenlike moves
-        direction, distance = divmod(plane, 8)
-        # 8 directions (n, ne, e, se, s, sw, w, nw)
+        direction = plane // 7  # all 8 directions
+        distance = plane % 7  # all 7 distances (a queenlike-moving piece have a distance of 1-7)
+        # 8 directions (w, nw, n, ne, e, se, s, sw)
         dir_offsets = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
         offset = dir_offsets[direction]
         to_row = row + offset[0] * (distance + 1)
         to_col = col + offset[1] * (distance + 1)
+        #if direction == 5:  # Assuming 5 is the index for SW in dir_offsets
+            #print("---")
+            #print(f"Decoding SW move: from ({row}, {col}) with distance {distance + 1}")
         if 0 <= to_row < 8 and 0 <= to_col < 8:
             to_square = to_row * 8 + to_col
+            #print(f"Calculated to_row: {to_row}, to_col: {to_col}, to_square: {to_square}")
+            #print(f"Resulting move: {square_to_coordinates(from_square)} to {square_to_coordinates(to_square)}")
+            #print("---")
+
     elif plane < 64:  # knightlike moves
+        # 8 directions (ssw, sse, see, nee, nne, nnw, nww, sww)
         knight_offsets = [(-2, -1), (-2, 1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
         offset = knight_offsets[plane - 56]
         to_row = row + offset[0]

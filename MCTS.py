@@ -1,6 +1,7 @@
 from MCTSNode import MCTSNode
 import logging
-from NNUtils import state_to_input
+from NNUtils import decode_policy_output, state_to_input
+from utils import filter_and_normalize_policy
 import torch
 
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
@@ -27,7 +28,16 @@ class MCTS:
 
             if not node.is_terminal_node():
                 # feed board_input to neural network and get the results (policy, value)
-                #policy, value = model(torch.tensor(state_to_input(self.board)))
+                policy, value = self.model(torch.tensor(state_to_input(self.board)))
+
+                # convert the policy tensor to a np array and reshape it to match the 8x8x73 format
+                policy_np = policy.numpy().reshape(8, 8, 73)
+                decoded_policy = decode_policy_output(policy_np)
+                filtered_normalized_policy = filter_and_normalize_policy(decoded_policy)
+
+                
+
+
 
                 # expansion
                 node = node.expand()    
