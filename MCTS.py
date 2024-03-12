@@ -1,17 +1,19 @@
 from MCTSNode import MCTSNode
-import numpy as np
-import chess
 import logging
+from NNUtils import state_to_input
+import torch
 
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 logger = logging.getLogger(__name__)
 
 class MCTS:
 
-    def __init__(self, board, args):
+    def __init__(self, board, args, model):
         self.board = board
         self.args = args
+        self.model = model
 
+    @torch.no_grad()
     def search(self):
         # initialize root node
         root = MCTSNode(self.board, self.args)
@@ -24,6 +26,9 @@ class MCTS:
                 node = node.select()
 
             if not node.is_terminal_node():
+                # feed board_input to neural network and get the results (policy, value)
+                #policy, value = model(torch.tensor(state_to_input(self.board)))
+
                 # expansion
                 node = node.expand()    
                 # simulation

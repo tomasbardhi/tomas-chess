@@ -65,10 +65,3 @@ class ResBlock(nn.Module):
         x = self.bn2(self.conv2(x))
         x += residual
         return F.relu(x)
-
-
-input_channels = 19 # Number of channels
-num_res_blocks = 10 # Number of residual blocks
-num_actions = 4672 # Maximum possible moves
-
-model = NNModel(input_channels, num_res_blocks, num_actions)
