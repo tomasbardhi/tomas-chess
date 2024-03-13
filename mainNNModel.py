@@ -46,11 +46,13 @@ print([move for move, _ in filtered_normalized_policy])
 print("LEGAL MOVES:", len(([move.uci() for move in board.legal_moves])))
 print("Decoded Moves:", len(filtered_normalized_policy))
 print("Value:", value.item())
+print(filtered_normalized_policy)
 
-
+'''
 move = find_highest_probability_legal_move(board, decoded_moves)
 print(f"Best move: {move}")
 print(board)
 board.push_uci(move)
 print("--")
 print(board)
+'''

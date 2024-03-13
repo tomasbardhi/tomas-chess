@@ -28,25 +28,22 @@ class MCTS:
 
             if not node.is_terminal_node():
                 # feed board_input to neural network and get the results (policy, value)
-                policy, value = self.model(torch.tensor(state_to_input(self.board)))
+                policy, value = self.model(torch.tensor(state_to_input(node.board)))
 
                 # convert the policy tensor to a np array and reshape it to match the 8x8x73 format
                 policy_np = policy.numpy().reshape(8, 8, 73)
                 decoded_policy = decode_policy_output(policy_np)
-                filtered_normalized_policy = filter_and_normalize_policy(decoded_policy)
+                # filtered_normalized_policy contains all the normalized legal moves ordered by probability from the actual policy
+                filtered_normalized_policy = filter_and_normalize_policy(node.board, decoded_policy)
 
+                # value contains the value returned by the nn for the given board
+                value = value.item()
                 
-
-
-
                 # expansion
-                node = node.expand()    
-                # simulation
-                result = node.simulate()
-                logger.debug("\tSimulation result: " + str(result))
+                node.expand(filtered_normalized_policy)  
             
             # backpropagation
-            node.backpropagate(result)
+            node.backpropagate(value)
         
 
         # return moves probabilities

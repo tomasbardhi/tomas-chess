@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class MCTSNode:
 
-    def __init__(self, board, args, parent=None, move=None):
+    def __init__(self, board, args, parent=None, move=None, prior=0):
         self.board = board
 
         self.args = args
@@ -17,81 +17,68 @@ class MCTSNode:
         self.move = move
 
         self.children = []
-        self.untried_moves = list(board.legal_moves)
+        
+        self.prior = prior
+
+        # not needed because we expand in all directions immediately
+        #self.untried_moves = list(board.legal_moves)
 
         self.visits = 0
         self.wins = 0
 
-    # a node is fully expanded when it has children and no untried moves
+    # a node is fully expanded when it has children (when we expand once, we expand in every direction so its either 0 or all children)
     def is_fully_expanded(self):
-        return not self.is_expandable_node() and self.has_children()
+        return self.has_children()
 
     # check if node has children
     def has_children(self):
         return len(self.children) > 0
 
-    # a node that has untried moves
-    def is_expandable_node(self):
-        return len(self.untried_moves) > 0
-
     # a node is terminal when the game has concluded
     def is_terminal_node(self):
         return self.board.is_game_over()
-
-    # a node is fully expanded when all possible moves from that node have been explored. 
-    def is_fully_expanded(self):
-        return len(self.untried_moves) == 0
     
     # method to select child
-    # calculate ucb for every child and select child with best ucb score
+    # calculate uct for every child and select child with best uct score
     def select(self):
         logger.debug("\n\tSELECT:\n")
         best_child = None
-        best_ucb = -np.inf
+        best_uct = -np.inf
         logger.debug("\tchildren: ")  
         for child in self.children:
-            ucb = self.get_ucb(child)
-            logger.debug("\t Child "+str(child.move)+" has ucb: " + str(ucb))
-            if ucb > best_ucb:
+            uct = self.get_uct(child)
+            logger.debug("\t Child "+str(child.move)+" has uct: " + str(uct))
+            if uct > best_uct:
                 best_child = child
-                best_ucb = ucb
+                best_uct = uct
         
         logger.debug("\n\tBest child:")
-        logger.debug("\t Child "+str(best_child.move)+" has ucb: " + str(best_ucb)) 
+        logger.debug("\t Child "+str(best_child.move)+" has uct: " + str(best_uct)) 
         return best_child
     
-    # create a child node from one untried move
-    def expand(self):
+    # create child nodes from policy moves
+    def expand(self, policy):
+        #logs
         logger.debug("\n\tEXPAND:\n")
-        logger.debug("\tExpandable moves("+str(len(self.untried_moves))+"):")
-        logger.debug("\t"),
-        moves_str = ", ".join(str(move) for move in self.untried_moves)
+        logger.debug(f"\tExpandable moves({len(policy)}):")
+        moves_str = ", ".join(f"{move}: {prob:.2f}" for move, prob in policy)
         logger.debug("\t" + moves_str)
-        # pick random untried move
-        move = np.random.choice(self.untried_moves)
-        logger.debug("\tPicked random move: " + str(move))
-        # copy board and make the move
-        new_board = self.board.copy()
-        new_board.push(move)
 
-        # create new child node with new board, move and parent
-        child = MCTSNode(new_board, self.args, move=move, parent=self)
-        
-        # add new child to parents children
-        self.children.append(child)
-        
-        # remove played move from parents untried moves
-        self.untried_moves.remove(move)
+        for move_uci, prob in policy:
+            if prob > 0:
+                # create Move object
+                move = chess.Move.from_uci(move_uci)
+                # copy board and make the move
+                new_board = self.board.copy()
+                new_board.push(move)
 
+                # create new child node with new board, move and parent
+                child = MCTSNode(new_board, self.args, self, move, prob)
 
-        logger.debug("\tExpandable moves after removing move:")
-        logger.debug("\t")
-        moves_str = ", ".join(str(move) for move in self.untried_moves)
-        logger.debug("\t" + moves_str)
-        logger.debug("")
+                # add new child to parents children
+                self.children.append(child)
 
-        return child
-
+    '''
     # simulate a whole game by playing random moves
     def simulate(self):
         logger.debug("\n\tSIMULATE:\n")
@@ -116,6 +103,7 @@ class MCTSNode:
             return 0.5
         # if game ends for any other reason, return 0.5
         return 0.5
+    '''
 
     # update all wins and visits of each parent node starting from the last node
     def backpropagate(self, result):
@@ -124,6 +112,7 @@ class MCTSNode:
         if self.parent is not None:
             self.parent.backpropagate(result)
 
+    '''
     # ucb is used to find the best next node
     def get_ucb(self, child):
         if child.visits == 0:
@@ -132,3 +121,12 @@ class MCTSNode:
         winrate = child.wins / child.visits
         exploration = self.args['C'] * math.sqrt(math.log(self.visits) / child.visits)
         return winrate + exploration
+    '''
+        
+    # revisited ucb for alphazero -> upper confidence bound applied to trees
+    def get_uct(self, child):
+        q = child.wins / child.visits if child.visits > 0 else 0
+        # total visits of all siblings + current child
+        total_visits = sum(parent.visits for parent in self.children)
+        uct = q + self.args['C'] * child.prior * math.sqrt(total_visits) / (1 + child.visits)
+        return uct

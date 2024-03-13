@@ -1,7 +1,7 @@
 import math
 
 args = {
-    'C': math.sqrt(2),
+    'C': 2,
     'num_searches': 100
 }
 
