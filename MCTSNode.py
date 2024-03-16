@@ -1,10 +1,7 @@
 import numpy as np
 import math
 import chess
-import logging
-
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-logger = logging.getLogger(__name__)
+from config import logger
 
 class MCTSNode:
 
@@ -47,7 +44,7 @@ class MCTSNode:
         logger.debug("\tchildren: ")  
         for child in self.children:
             uct = self.get_uct(child)
-            logger.debug("\t Child "+str(child.move)+" has uct: " + str(uct))
+            logger.debug("\t Child "+str(child.move)+" has uct: " + str(uct) + " and probability: " + str(child.prior))
             if uct > best_uct:
                 best_child = child
                 best_uct = uct
@@ -61,7 +58,7 @@ class MCTSNode:
         #logs
         logger.debug("\n\tEXPAND:\n")
         logger.debug(f"\tExpandable moves({len(policy)}):")
-        moves_str = ", ".join(f"{move}: {prob:.2f}" for move, prob in policy)
+        moves_str = ", ".join(f"{move}" for move, _ in policy)
         logger.debug("\t" + moves_str)
 
         for move_uci, prob in policy:

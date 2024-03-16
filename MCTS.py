@@ -3,9 +3,7 @@ import logging
 from NNUtils import decode_policy_output, state_to_input
 from utils import filter_and_normalize_policy
 import torch
-
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-logger = logging.getLogger(__name__)
+from config import logger
 
 class MCTS:
 
@@ -23,8 +21,12 @@ class MCTS:
             node = root
             logger.debug("\nIteration: " + str(_))  
             # selection
+            #print(node.children)
+            selection_depth = 0
             while node.is_fully_expanded():
+                logger.error("SELECTION DEPTH: " + str(selection_depth))
                 node = node.select()
+                selection_depth = selection_depth + 1
 
             if not node.is_terminal_node():
                 # feed board_input to neural network and get the results (policy, value)
@@ -35,6 +37,8 @@ class MCTS:
                 decoded_policy = decode_policy_output(policy_np)
                 # filtered_normalized_policy contains all the normalized legal moves ordered by probability from the actual policy
                 filtered_normalized_policy = filter_and_normalize_policy(node.board, decoded_policy)
+                #print("Policy: ")
+                #print(filtered_normalized_policy)
 
                 # value contains the value returned by the nn for the given board
                 value = value.item()
@@ -53,14 +57,13 @@ class MCTS:
         move_stats = {}
         total_visits = 0
 
-        logger.info(f"{'Move':<10} | {'Visits':<7} | {'Win Rate':<10} | {'Probability':<12}")
+        logger.info(f"{'Move':<10} | {'Visits':<10} | {'Probability':<15}")
         logger.info("-" * 45)
 
-        # calc move visits, winrate and total vists
+        # calc move visits and total vists
         for child in root.children:
             total_visits += child.visits
-            win_rate = child.wins / child.visits if child.visits > 0 else 0
-            move_stats[child.move.uci()] = {'visits': child.visits, 'win_rate': win_rate}
+            move_stats[child.move.uci()] = {'visits': child.visits}
 
         # calc probabilities
         for move in move_stats:
@@ -68,7 +71,7 @@ class MCTS:
 
         # print
         for move, stats in move_stats.items():
-            logger.info(f"{move:<10} | {stats['visits']:<7} | {stats['win_rate']:<10.2%} | {stats['probability']:<12}")
+            logger.info(f"{move:<10} | {stats['visits']:<10} | {stats['probability']:<15}")
 
         logger.info("\nTotal visits: " + str(total_visits))
 

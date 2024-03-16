@@ -1,8 +1,5 @@
 import chess
-import logging
-
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-logger = logging.getLogger(__name__)
+from config import logger
 
 class Game:
 
