@@ -17,6 +17,7 @@ class MCTS:
         # initialize root node
         root = MCTSNode(self.board, self.args)
         logger.debug("\nSEARCH:")
+        filtered_normalized_policy = []
         for _ in range(self.args['num_searches']):
             node = root
             logger.debug("\nIteration: " + str(_))  
@@ -24,7 +25,7 @@ class MCTS:
             #print(node.children)
             selection_depth = 0
             while node.is_fully_expanded():
-                logger.error("SELECTION DEPTH: " + str(selection_depth))
+                logger.info("SELECTION DEPTH: " + str(selection_depth))
                 node = node.select()
                 selection_depth = selection_depth + 1
 
@@ -37,8 +38,6 @@ class MCTS:
                 decoded_policy = decode_policy_output(policy_np)
                 # filtered_normalized_policy contains all the normalized legal moves ordered by probability from the actual policy
                 filtered_normalized_policy = filter_and_normalize_policy(node.board, decoded_policy)
-                #print("Policy: ")
-                #print(filtered_normalized_policy)
 
                 # value contains the value returned by the nn for the given board
                 value = value.item()
@@ -76,4 +75,4 @@ class MCTS:
         logger.info("\nTotal visits: " + str(total_visits))
 
         #moves_probs = {move: stats['probability'] for move, stats in move_stats.items()}
-        return {move: stats['probability'] for move, stats in move_stats.items()}
+        return [(move, stats['probability']) for move, stats in move_stats.items()]

@@ -54,7 +54,7 @@ def decode_policy_output(policy_output):
                     all_moves.append((move, probability))
     
     # sorty by probability
-    all_moves.sort(key=lambda x: x[1], reverse=True)
+    #all_moves.sort(key=lambda x: x[1], reverse=True)
 
     #return [move for move, _ in all_moves]
     return all_moves
