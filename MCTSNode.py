@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import chess
-from config import logger
+from config import logger, print_file
 
 class MCTSNode:
 
@@ -38,28 +38,31 @@ class MCTSNode:
     # method to select child
     # calculate uct for every child and select child with best uct score
     def select(self):
-        logger.debug("\n\tSELECT:\n")
         best_child = None
         best_uct = -np.inf
-        logger.debug("\tchildren: ")  
+        print_file("game", "")
+        print_file("game", "\t\tChildren: ")
         for child in self.children:
             uct = self.get_uct(child)
-            logger.debug("\t Child "+str(child.move)+" has uct: " + str(uct) + " and probability: " + str(child.prior))
+            print_file("game", "\t\t\tChild "+str(child.move)+" has uct: " + str(uct) + " and probability: " + str(child.prior))
             if uct > best_uct:
                 best_child = child
                 best_uct = uct
         
-        logger.debug("\n\tBest child:")
-        logger.debug("\t Child "+str(best_child.move)+" has uct: " + str(best_uct)) 
+        print_file("game", "")
+        print_file("game", "\t\tBest child:")
+        print_file("game", "\t\t\tChild "+str(best_child.move)+" has uct: " + str(best_uct))
+        print_file("game", "")
         return best_child
     
     # create child nodes from policy moves
     def expand(self, policy):
         #logs
-        logger.debug("\n\tEXPAND:\n")
-        logger.debug(f"\tExpandable moves({len(policy)}):")
-        moves_str = ", ".join(f"{move}" for move, _ in policy)
-        logger.debug("\t" + moves_str)
+        print_file("game", "\tExpansion Step (Expand all children at once):")
+        print_file("game", "")
+        print_file("game", f"\t\tExpandable moves({len(policy)}):")
+        print_file("game", "\t\t" + ", ".join(f"{move}" for move, _ in policy))
+        print_file("game", "")
 
         for move_uci, prob in policy:
             if prob > 0:
