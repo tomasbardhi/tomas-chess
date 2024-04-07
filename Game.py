@@ -1,7 +1,7 @@
 import chess
 from NNUtils import state_to_input
-from config import logger, print_file
-import os
+from config import logger
+from utils import print_file
 import numpy as np
 from config import args
 import torch
@@ -12,36 +12,6 @@ class Game:
         self.board = board
         self.mcts = mcts
         self.model = model
-
-    def learn(self):
-        print_file("START LEARNING:")
-        for iteration in range(args['num_iterations']):
-            memory = []
-            print_file("iteration: " + str(iteration))
-            print_file(self.board)
-            #print_file("memory: ")
-            #print_file(memory)
-            self.model.eval()
-            for selfPlay_iteration in range(args['num_selfPlay_iterations']):
-                print_file("self play iteration: " + str(selfPlay_iteration))
-                memory += self.self_play()
-                #print_file("memory:")
-                #print_file(memory)
-                
-            self.model.train()
-            #print_file("memory after train?:")
-            #print_file(memory)
-            '''
-            for epoch in range(args['num_epochs']):
-                print("epoch: " + str(epoch))
-                print("memory before epoch:")
-                print(memory)
-                self.train(memory)
-                print("memory after epoch:")
-                print(memory)
-            '''
-            torch.save(self.model.state_dict(), f"model_{iteration}.pt")
-            #torch.save(self.optimizer.state_dict(), f"optimizer_{iteration}.pt")
 
     def self_play(self):
         storage = []
@@ -90,6 +60,11 @@ class Game:
         print_file("game", self.board)
         print_file("game", "")
         print_file("game", "Game over - " + str(self.board.result()))
+        print_file("self-learn", "Game over - " + str(self.board.result()))
+        print_file("self-learn", "")
+        print_file("self-learn", "Board end:")
+        print_file("self-learn", self.board)
+        print_file("self-learn", "")
         print_file("game", "")
         if self.board.is_checkmate():
             winner = 'White' if self.board.turn == chess.BLACK else 'Black'

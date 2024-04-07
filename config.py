@@ -6,10 +6,10 @@ logger = logging.getLogger(__name__)
 
 args = {
     'C': 2,
-    'num_searches': 5,
-    'num_iterations': 2,
-    'num_selfPlay_iterations': 2,
-    'num_epochs': 2
+    'num_searches': 100,
+    'num_iterations': 1,
+    'num_selfPlay_iterations': 1,
+    'num_epochs': 1
 }
 
 input_channels = 19 # number of channels
