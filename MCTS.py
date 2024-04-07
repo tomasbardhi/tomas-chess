@@ -1,9 +1,9 @@
 from MCTSNode import MCTSNode
 import logging
 from NNUtils import decode_policy_output, state_to_input
-from utils import filter_and_normalize_policy
+from utils import filter_and_normalize_policy, print_file
 import torch
-from config import logger, print_file
+from config import logger
 
 class MCTS:
 

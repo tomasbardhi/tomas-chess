@@ -1,7 +1,8 @@
 import numpy as np
 import math
 import chess
-from config import logger, print_file
+from config import logger
+from utils import print_file
 
 class MCTSNode:
 

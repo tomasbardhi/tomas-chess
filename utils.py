@@ -1,5 +1,24 @@
 import chess
 import numpy as np
+import os
+
+def clear_outputs():
+    for filename in os.listdir("outputs"):
+        file_path = os.path.join("outputs", filename)
+        if os.path.isfile(file_path):
+            with open(file_path, 'w'):
+                pass
+
+'''
+    - game: logs game information
+    - moves: logs each move of a game
+'''
+def print_file(filename, text):
+    if filename == "game" or filename == "moves" or filename == "self-learn":
+        with open("outputs/"+filename+".txt", 'a') as file:
+            if not isinstance(text, str):
+                text = str(text)
+            file.write(text + '\n')
 
 def filter_and_normalize_policy(board, policy):
     legal_moves = [move.uci() for move in board.legal_moves]
