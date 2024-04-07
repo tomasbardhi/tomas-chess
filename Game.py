@@ -38,13 +38,13 @@ class Game:
             print_file("game", mcts_probs)
             print_file("game", "")
 
-            # save data to storage
-            storage.append((self.board.copy(), mcts_probs, self.board.turn))
-
             # select random move from mcts_probs 
             moves = [move for move, _ in mcts_probs]
             probabilities = [prob for _, prob in mcts_probs]
             move = np.random.choice(moves, p=probabilities)
+
+            # save data to storage
+            storage.append((self.board.copy(), probabilities, self.board.turn))
 
             # play move
             print_file("game", "Selected move: " + str(move))
@@ -89,7 +89,7 @@ class Game:
             winner = 1 if self.board.turn == chess.BLACK else -1
 
         processed_storage = []
-        for _board_state, _mcts_probs, _player_turn in storage:
+        for _board_state, _probabilities, _player_turn in storage:
             # transform board to input
             state_input = state_to_input(_board_state)
             # set outcome
@@ -100,11 +100,11 @@ class Game:
             
             #print_file("game", _board_state)
             #print_file("game", "")
-            #print_file("game", _mcts_probs)
+            #print_file("game", _probabilities)
             #print_file("game", "")
             #print_file("game", outcome)
             #print_file("game", "")
-            processed_storage.append((state_input, _mcts_probs, outcome))
+            processed_storage.append((state_input, _probabilities, outcome))
 
         return processed_storage
 
