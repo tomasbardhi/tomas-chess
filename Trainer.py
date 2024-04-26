@@ -79,7 +79,7 @@ class Trainer:
                 print_file("self-learn", "--------------------------------------------------------------------------------")
                 print_file("self-learn", "")  
                 print_file("self-learn", "Epoch " + str(epoch))  
-                self.train_02(memory)
+                self.train(memory)
             
             
             print_file("self-learn", "")
@@ -89,87 +89,14 @@ class Trainer:
             torch.save(self.game.model.state_dict(), f"training/model_{iteration}.pt")
             torch.save(self.optimizer.state_dict(), f"training/optimizer_{iteration}.pt")
 
-    def train_02(self, memory):
-        #random.shuffle(memory)
-        for batchIdx in range(0, len(memory), args['batch_size']):
-            sample = memory[batchIdx:batchIdx + args['batch_size']]
-            state, policy_targets, value_targets = zip(*sample)
-            
-            # pad policy
-            policy_targets = [np.pad(policy, (0, 218 - len(policy)), 'constant') for policy in policy_targets]
-
-
-            print(state)
-            print(policy_targets)
-            print(value_targets)
-            
-            print("TEST: TEST: TEST: TEST: TEST: TEST: TEST: TEST: TEST: TEST: TEST: ")
-            print("")
-            state = torch.tensor(state, dtype=torch.float32)
-            state = state.squeeze(1)
-            print(state)
-            print("")
-            print("")
-            print(policy_targets)
-            print("")
-            print("")
-            policy_targets = torch.tensor(policy_targets, dtype=torch.float32)
-            print(policy_targets)
-            print("")
-            value_targets = torch.tensor(value_targets, dtype=torch.float32).view(-1, 1)
-            print(value_targets)
-            print("")
-            
-            out_policy, out_value = self.game.model(state)
-
-            print("OUT POLICY")
-            print("")
-            print(out_policy)
-            print("")
-            print("")
-            print(policy_targets)
-            print("")
-            print("")
-            print("")
-            print("")
-            print("")
-            print("")
-
-            for s in state:
-                print("State: ")
-                print("")
-                print_channels(s)
-                print("")
-                print("")
-                print("")
-
-            #policy_np = out_policy.detach().numpy().reshape(8, 8, 73)
-            #print(out_policy.shape)
-            #decoded_policy = decode_policy_output(policy_np)
-            
-
-            policy_loss = F.cross_entropy(out_policy, policy_targets)
-            value_loss = F.mse_loss(out_value, value_targets)
-            loss = policy_loss + value_loss
-            
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-
-    def train_01(self, memory):
+    def train(self, memory):
         # create tensors
-        print(memory[0][0])
-        print(memory.shape)
-        state_inputs = torch.stack([torch.tensor(m[0], dtype=torch.float).squeeze(0) for m in memory])
-        policies = torch.stack([torch.tensor(m[1], dtype=torch.float) for m in memory])
+        # memory[0] - state input
+        # memory[1] - raw prediction
+        # memory[2] - result
+        state_inputs = torch.stack([torch.tensor(m[0], dtype=torch.float) for m in memory]).squeeze(1)
+        policies = torch.stack([m[1][0] for m in memory]).squeeze(1)
         values = torch.tensor([m[2] for m in memory], dtype=torch.float)
-
-        print(state_inputs.shape)
-        print(state_inputs[0].shape)
-        print(policies.shape)
-        print(policies[0].shape)
-        print(values.shape)
-        print(values[0].shape)
 
         # dataset + loader for batching
         train_dataset = TensorDataset(state_inputs, policies, values)
@@ -181,18 +108,14 @@ class Trainer:
 
         # loop through batches
         for state_batch, policy_batch, value_batch in train_loader:
-            # model prediction^
+            # model prediction
             predicted_policy, predicted_value = self.game.model(state_batch)
 
+            #state_to_input__ = state_batch[0].reshape(input_channels, 8, 8)
+            #print_channels(predicted_policy)
+
             # loss calculation
-            print("predicted_policy.shape")
-            print(predicted_policy.shape)
-            print(predicted_policy.squeeze().shape)
-            print("predicted_value.shape")
-            print(predicted_value.shape)
-            print(predicted_value.squeeze().shape)
-            policy_loss = policy_loss_fn(predicted_policy, policy_batch)
-            print("fine")
+            policy_loss = policy_loss_fn(predicted_policy, policy_batch.max(1)[1])
             value_loss = value_loss_fn(predicted_value.squeeze(), value_batch)
             total_loss = policy_loss + value_loss
 

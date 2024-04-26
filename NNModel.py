@@ -18,7 +18,7 @@ class NNModel(nn.Module):
             *[ResBlock(128) for _ in range(num_res_blocks)]
         )
         
-        # Policy Head
+        # Policy Head (probability over all possible moves: num_actions)
         self.policy_head = nn.Sequential(
             nn.Conv2d(128, 2, kernel_size=1),
             nn.BatchNorm2d(2),
@@ -28,7 +28,7 @@ class NNModel(nn.Module):
             nn.Softmax(dim=1)
         )
         
-        # Value Head
+        # Value Head (likelihood of winning: -1 to 1)
         self.value_head = nn.Sequential(
             nn.Conv2d(128, 1, kernel_size=1),
             nn.BatchNorm2d(1),

@@ -9,7 +9,7 @@ args = {
     'num_searches': 250,
     'num_iterations': 1,
     'num_selfPlay_iterations': 2,
-    'num_epochs': 1,
+    'num_epochs': 10,
     'batch_size': 32
 }
 

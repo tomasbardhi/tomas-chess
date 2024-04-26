@@ -33,7 +33,9 @@ class Game:
             print_file("game", "")
 
             # get filtered + normalized policy
-            mcts_probs = self.mcts.search()
+            model_prediction = self.mcts.search()
+            mcts_probs = model_prediction[0]
+            raw_prediction = model_prediction[1]
             print_file("game", "Filtered, normalized policy")
             print_file("game", mcts_probs)
             print_file("game", "")
@@ -44,7 +46,7 @@ class Game:
             move = np.random.choice(moves, p=probabilities)
 
             # save data to storage
-            storage.append((self.board.copy(), probabilities, self.board.turn))
+            storage.append((self.board.copy(), probabilities, self.board.turn, raw_prediction))
 
             # play move
             print_file("game", "Selected move: " + str(move))
@@ -89,7 +91,7 @@ class Game:
             winner = 1 if self.board.turn == chess.BLACK else -1
 
         processed_storage = []
-        for _board_state, _probabilities, _player_turn in storage:
+        for _board_state, _probabilities, _player_turn, _raw_prediction in storage:
             # transform board to input
             state_input = state_to_input(_board_state)
             # set outcome
@@ -98,13 +100,7 @@ class Game:
             else:
                 outcome = 1 if (winner == 1 and _player_turn == chess.WHITE) or (winner == -1 and _player_turn == chess.BLACK) else -1
             
-            #print_file("game", _board_state)
-            #print_file("game", "")
-            #print_file("game", _probabilities)
-            #print_file("game", "")
-            #print_file("game", outcome)
-            #print_file("game", "")
-            processed_storage.append((state_input, _probabilities, outcome))
+            processed_storage.append((state_input, _raw_prediction, outcome))
 
         return processed_storage
 
@@ -135,7 +131,8 @@ class Game:
         self.board.push_uci(move)
 
     def mcts_move(self):
-        mcts_probs = self.mcts.search()
+        mcts_probs = self.mcts.search(False)
+        mcts_probs = mcts_probs[0]
         print("MCTS SEARCH RETURN VALUES:")
         print(mcts_probs)
         best_move = max(mcts_probs, key=lambda x: x[1])[0]

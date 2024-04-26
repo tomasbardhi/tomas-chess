@@ -13,13 +13,15 @@ class MCTS:
         self.args = args
         self.model = model
 
-    @torch.no_grad()
+    #@torch.no_grad()
     def search(self):
         # initialize root node
         root = MCTSNode(self.board, self.args)
         print_file("game", "\tMCTS Search:")
         print_file("game", "")
         filtered_normalized_policy = []
+        training_return = None
+        firstPolicyFlag = False
         for _ in range(self.args['num_searches']):
             node = root
             print_file("game", "\tIteration: " + str(_)) 
@@ -35,9 +37,11 @@ class MCTS:
             if not node.is_terminal_node():
                 # feed board_input to neural network and get the results (policy, value)
                 policy, value = self.model(torch.tensor(state_to_input(node.board)))
-
+                if firstPolicyFlag == False:
+                    training_return = policy, value
+                    firstPolicyFlag = True
                 # convert the policy tensor to a np array and reshape it to match the 8x8x73 format
-                policy_np = policy.numpy().reshape(8, 8, 73)
+                policy_np = policy.detach().numpy().reshape(8, 8, 73)
                 decoded_policy = decode_policy_output(policy_np)
                 # filtered_normalized_policy contains all the normalized legal moves ordered by probability from the actual policy
                 filtered_normalized_policy = filter_and_normalize_policy(node.board, decoded_policy)
@@ -60,7 +64,6 @@ class MCTS:
             # backpropagation
             node.backpropagate(value)
         
-
         # return moves probabilities
         print_file("game", "\tProbabilities:")
         print_file("game", "")
@@ -89,6 +92,6 @@ class MCTS:
         print_file("game", "")
         print_file("game", "\tTotal visits: " + str(total_visits))
         print_file("game", "")
-
+        
         #moves_probs = {move: stats['probability'] for move, stats in move_stats.items()}
-        return [(move, stats['probability']) for move, stats in move_stats.items()]
+        return [(move, stats['probability']) for move, stats in move_stats.items()], training_return
