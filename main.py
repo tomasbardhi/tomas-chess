@@ -17,7 +17,7 @@ def test_model():
     model = NNModel(input_channels, num_res_blocks, num_actions)
     model.load_state_dict(torch.load(model_path))
     model.eval()
-    board = chess.Board(fen='6k1/4Q3/5K2/8/8/8/8/8 w - - 0 1')
+    board = chess.Board(fen='7k/4Q3/5K2/8/8/8/8/8 b - - 0 1')
 
 
     #while not board.is_game_over():
@@ -66,10 +66,11 @@ clear_outputs()
 model = NNModel(input_channels, num_res_blocks, num_actions)
 model.eval()
 
-optimizer = torch.optim.Adam(model.parameters(), lr=100)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 fen = '7k/4Q3/5K2/8/8/8/8/8 b - - 0 1'
 # fen = 'r3r1k1/pbpn2b1/1p3qQ1/3p2N1/3P4/2N1P3/PP3PP1/R3K2R w - - 0 1'
+#fen = '8/5k2/8/4QK2/8/8/8/8 b - - 0 1'
 board = chess.Board()
 mcts = MCTS(board, args, model)
 

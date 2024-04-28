@@ -14,7 +14,7 @@ def clear_outputs():
     - moves: logs each move of a game
 '''
 def print_file(filename, text):
-    if filename == "game" or filename == "mmoves" or filename == "self-learn":
+    if filename == "ggame" or filename == "mmoves" or filename == "self-learn":
         with open("outputs/"+filename+".txt", 'a') as file:
             if not isinstance(text, str):
                 text = str(text)

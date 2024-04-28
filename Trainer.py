@@ -111,15 +111,14 @@ class Trainer:
             # model prediction
             predicted_policy, predicted_value = self.game.model(state_batch)
 
-            #state_to_input__ = state_batch[0].reshape(input_channels, 8, 8)
-            #print_channels(predicted_policy)
-
             # loss calculation
             policy_loss = policy_loss_fn(predicted_policy, policy_batch.max(1)[1])
             value_loss = value_loss_fn(predicted_value.squeeze(), value_batch)
             total_loss = policy_loss + value_loss
+            print(total_loss)
 
             # backpropagation
             self.optimizer.zero_grad() 
             total_loss.backward()
+            #print(self.game.model.conv_base[0].weight.grad)
             self.optimizer.step()

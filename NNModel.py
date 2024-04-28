@@ -20,7 +20,7 @@ class NNModel(nn.Module):
         
         # Policy Head (probability over all possible moves: num_actions)
         self.policy_head = nn.Sequential(
-            nn.Conv2d(128, 2, kernel_size=1),
+            nn.Conv2d(128, 2, kernel_size=3, padding=1),
             nn.BatchNorm2d(2),
             nn.ReLU(inplace=True),
             nn.Flatten(),
@@ -30,7 +30,7 @@ class NNModel(nn.Module):
         
         # Value Head (likelihood of winning: -1 to 1)
         self.value_head = nn.Sequential(
-            nn.Conv2d(128, 1, kernel_size=1),
+            nn.Conv2d(128, 1, kernel_size=3, padding=1),
             nn.BatchNorm2d(1),
             nn.ReLU(inplace=True),
             nn.Flatten(),
