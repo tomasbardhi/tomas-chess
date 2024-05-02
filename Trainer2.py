@@ -1,6 +1,5 @@
 import chess
 from utils import print_file
-from config import args
 import torch
 from Game import Game
 from MCTS import MCTS
@@ -23,7 +22,59 @@ class Trainer2:
         self.board = chess.Board(fen)
         self.fen = fen
 
-    def train_position(self, state_input, policy_target, value_target):
+    def train_loop(self):
+        memory = []
+        for _ in range(3):
+            self.board = chess.Board(self.fen)
+            mcts = MCTS(self.board, args, self.model)
+            game = Game(self.board, mcts, self.model)
+            memory += game.self_play()
+
+        self.model.train()
+        for _ in range(50):
+            self.train_single_game(memory)
+ 
+        torch.save(self.model.state_dict(), f"training/batch_model.pt")
+        torch.save(self.optimizer.state_dict(), f"training/batch_optimizer.pt")
+
+    def train_single_game(self, memory):
+        self.optimizer.zero_grad() 
+
+        # create tensors
+        # memory[0] - state input
+        # memory[1] - raw prediction
+        # memory[2] - result
+        state_inputs = torch.stack([torch.tensor(m[0], dtype=torch.float) for m in memory]).squeeze(1)
+        policies = torch.stack([m[1][0] for m in memory]).squeeze(1)
+        values = torch.tensor([m[2] for m in memory], dtype=torch.float)
+        
+        policies = torch.zeros(3, 4672)
+        policies[:, 3825] = 1
+
+        policies = torch.full((3, 4672), 0.7)
+        policies[:, 3825] = 0.75
+
+        # dataset + loader for batching
+        train_dataset = TensorDataset(state_inputs, policies, values)
+        train_loader = DataLoader(train_dataset, batch_size=args['batch_size'], shuffle=True)
+
+        # loop through batches
+        for state_batch, policy_batch, value_batch in train_loader:
+            # model prediction
+            predicted_policy, predicted_value = self.model(state_batch)
+
+            # loss calculation
+            policy_loss = torch.nn.CrossEntropyLoss()(predicted_policy, policy_batch.max(1)[1])
+            value_loss = torch.nn.MSELoss()(predicted_value.squeeze(0), value_batch)
+            total_loss = policy_loss + 0.5 * value_loss
+            print(total_loss)
+
+            # backpropagation
+            total_loss.backward()
+            self.optimizer.step()
+            self.scheduler.step()
+
+    def train_single_position(self, state_input, policy_target, value_target):
         self.model.train()
         print_channels(state_to_input(self.board).reshape(input_channels, 8, 8))
         for epoch in range(100):

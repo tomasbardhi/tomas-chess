@@ -46,7 +46,7 @@ class Game:
             move = np.random.choice(moves, p=probabilities)
 
             # save data to storage
-            storage.append((self.board.copy(), probabilities, self.board.turn, raw_prediction))
+            storage.append((self.board.copy(), probabilities, self.board.turn, raw_prediction, move))
 
             # play move
             print_file("game", "Selected move: " + str(move))
@@ -91,7 +91,7 @@ class Game:
             winner = 1 if self.board.turn == chess.BLACK else -1
 
         processed_storage = []
-        for _board_state, _probabilities, _player_turn, _raw_prediction in storage:
+        for _board_state, _probabilities, _player_turn, _raw_prediction, _move in storage:
             # transform board to input
             state_input = state_to_input(_board_state)
             # set outcome
@@ -100,7 +100,7 @@ class Game:
             else:
                 outcome = 1 if (winner == 1 and _player_turn == chess.WHITE) or (winner == -1 and _player_turn == chess.BLACK) else -1
             
-            processed_storage.append((state_input, _raw_prediction, outcome))
+            processed_storage.append((state_input, _raw_prediction, outcome, _move))
 
         return processed_storage
 

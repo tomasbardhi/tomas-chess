@@ -13,12 +13,12 @@ import numpy as np
 from printUtils import print_channels
 
 
-def test_model():
-    model_path = 'training/model_0.pt' 
+def test_model(fen):
+    model_path = 'training/batch_model.pt' 
     model = NNModel(input_channels, num_res_blocks, num_actions)
     model.load_state_dict(torch.load(model_path))
     model.eval()
-    board = chess.Board(fen='7k/4Q3/5K2/8/8/8/8/8 w - - 0 1')
+    board = chess.Board(fen)
 
 
     #while not board.is_game_over():
@@ -104,13 +104,18 @@ policy_target = torch.zeros(1, 4672)
 policy_target[0, 3825] = 1
 value_target = torch.tensor([1.0])
 
-trainer.train_position(torch.tensor(state_to_input(board)), policy_target, value_target)
+## trainer.train_single_position(torch.tensor(state_to_input(board)), policy_target, value_target)
+
+trainer.train_loop()
 
 trainer.model.eval()
 predicted_policy, predicted_value = trainer.model(torch.tensor(state_to_input(board)))
 print(f"Predicted Policy: {predicted_policy}")
 print(f"Predicted Value: {predicted_value}")
 
+test_model(fen)
+fen = '7k/3Q4/5K2/8/8/8/8/8 w - - 0 1'
+test_model(fen)
 
 ### ------ train on one position ------------------------------------------------------
 
