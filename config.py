@@ -8,8 +8,8 @@ args = {
     'C': 2,
     'num_searches': 300,
     'num_iterations': 1,
-    'num_selfPlay_iterations': 2,
-    'num_epochs': 10,
+    'num_selfPlay_iterations': 1,
+    'num_epochs': 50,
     'batch_size': 32
 }
 

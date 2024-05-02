@@ -13,18 +13,20 @@ class NNModel(nn.Module):
             nn.ReLU(inplace=True)
         )
 
+        '''
         # Help the network learn deeper
         self.res_blocks = nn.Sequential(
             *[ResBlock(128) for _ in range(num_res_blocks)]
         )
+        '''
         
         # Policy Head (probability over all possible moves: num_actions)
         self.policy_head = nn.Sequential(
-            nn.Conv2d(128, 2, kernel_size=3, padding=1),
-            nn.BatchNorm2d(2),
+            nn.Conv2d(128, 73, kernel_size=3, padding=1),
+            nn.BatchNorm2d(73),
             nn.ReLU(inplace=True),
             nn.Flatten(),
-            nn.Linear(2 * 8 * 8, num_actions),
+            nn.Linear(8 * 8 * 73, 8 * 8 * 73),
             nn.Softmax(dim=1)
         )
         
@@ -45,11 +47,12 @@ class NNModel(nn.Module):
     #                                       -> value
     def forward(self, x):
         x = self.conv_base(x)
-        x = self.res_blocks(x)
+        #x = self.res_blocks(x)
         policy = self.policy_head(x)
         value = self.value_head(x)
         return policy, value
 
+'''
 class ResBlock(nn.Module):
     # Output of the block is added to its input to help the network learn deeper features without losing important information from earlier layers.
     def __init__(self, channels):
@@ -65,3 +68,4 @@ class ResBlock(nn.Module):
         x = self.bn2(self.conv2(x))
         x += residual
         return F.relu(x)
+'''
