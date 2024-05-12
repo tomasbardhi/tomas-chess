@@ -37,6 +37,12 @@ class Trainer2:
         torch.save(self.model.state_dict(), f"training/batch_model.pt")
         torch.save(self.optimizer.state_dict(), f"training/batch_optimizer.pt")
 
+    def create_policy_tensor(self, position):
+        policy = torch.zeros(4672)
+        for move, move_index, probability in position[1]:
+            policy[move_index] = probability
+        return policy
+
     def train_single_game(self, memory):
         self.optimizer.zero_grad() 
 
@@ -45,14 +51,12 @@ class Trainer2:
         # memory[1] - raw prediction
         # memory[2] - result
         state_inputs = torch.stack([torch.tensor(m[0], dtype=torch.float) for m in memory]).squeeze(1)
-        policies = torch.stack([m[1][0] for m in memory]).squeeze(1)
+        #policies = torch.stack([m[1][0] for m in memory]).squeeze(1)
         values = torch.tensor([m[2] for m in memory], dtype=torch.float)
         
-        policies = torch.zeros(3, 4672)
-        policies[:, 3825] = 1
-
-        policies = torch.full((3, 4672), 0.7)
-        policies[:, 3825] = 0.75
+        policies = torch.stack([
+            self.create_policy_tensor(m) for m in memory
+        ])
 
         # dataset + loader for batching
         train_dataset = TensorDataset(state_inputs, policies, values)

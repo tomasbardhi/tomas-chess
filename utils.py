@@ -2,6 +2,8 @@ import chess
 import numpy as np
 import os
 
+
+
 def clear_outputs():
     for filename in os.listdir("outputs"):
         file_path = os.path.join("outputs", filename)

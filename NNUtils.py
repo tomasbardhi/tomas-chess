@@ -2,6 +2,21 @@ import chess
 import numpy as np
 from config import input_channels
 
+# see end of file for initialization of map
+def initialize_move_to_index_mapping():
+    move_to_index_map = {}
+    index = 0 
+
+    for i in range(8):
+        for j in range(8):
+            for k in range(73):
+                move = decode_move(i, j, k)
+                if move:
+                    move_to_index_map[move] = index
+                index += 1  # index must increment also when the move is None !!!!!
+    
+    return move_to_index_map
+
 def state_to_input(board):
     input_shape = (input_channels, 8, 8)
     state_input = np.zeros(input_shape, dtype=np.float32)
@@ -123,3 +138,5 @@ def decode_move(row, col, plane):
         return move_str
     return None
 
+
+move_to_index_map = initialize_move_to_index_mapping()

@@ -1,5 +1,5 @@
 import chess
-from NNUtils import state_to_input
+from NNUtils import state_to_input, move_to_index_map
 from config import logger
 from utils import print_file
 import numpy as np
@@ -43,10 +43,19 @@ class Game:
             # select random move from mcts_probs 
             moves = [move for move, _ in mcts_probs]
             probabilities = [prob for _, prob in mcts_probs]
+            
+            # pick move by considering probabilty || pick best move
             move = np.random.choice(moves, p=probabilities)
+            #move = moves[np.argmax(probabilities)]
+
+            # create tuples (move, move_index, probibality)
+            move_tuples = []
+            for m, p in zip(moves, probabilities):
+                move_index = move_to_index_map[m]
+                move_tuples.append((m, move_index, p))
 
             # save data to storage
-            storage.append((self.board.copy(), probabilities, self.board.turn, raw_prediction, move))
+            storage.append((self.board.copy(), move_tuples, self.board.turn, raw_prediction, move))
 
             # play move
             print_file("game", "Selected move: " + str(move))
@@ -91,7 +100,7 @@ class Game:
             winner = 1 if self.board.turn == chess.BLACK else -1
 
         processed_storage = []
-        for _board_state, _probabilities, _player_turn, _raw_prediction, _move in storage:
+        for _board_state, _move_tuples, _player_turn, _raw_prediction, _move in storage:
             # transform board to input
             state_input = state_to_input(_board_state)
             # set outcome
@@ -100,7 +109,7 @@ class Game:
             else:
                 outcome = 1 if (winner == 1 and _player_turn == chess.WHITE) or (winner == -1 and _player_turn == chess.BLACK) else -1
             
-            processed_storage.append((state_input, _raw_prediction, outcome, _move))
+            processed_storage.append((state_input, _move_tuples, outcome, _move))
 
         return processed_storage
 
