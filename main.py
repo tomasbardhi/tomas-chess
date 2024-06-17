@@ -64,7 +64,8 @@ def test_mcts(fen):
     board = chess.Board(fen)
     model_path = 'training/batch_model.pt' 
     model = NNModel(input_channels, num_res_blocks, num_actions)
-    model.load_state_dict(torch.load(model_path))
+    #set model + model path to start the network with the model
+    #model.load_state_dict(torch.load(model_path))
     model.eval()
     mcts = MCTS(board, args, model)
     print(board)
@@ -117,7 +118,8 @@ test_model('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
 #fen = '7k/4Q3/5K2/8/8/8/8/8 w - - 0 1'  # e7g7 is checkmate for white
 fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 model = NNModel(input_channels, num_res_blocks, num_actions)
-model.load_state_dict(torch.load('training/model_10062024.pt'))
+#set model + model path to start the network with the model
+#model.load_state_dict(torch.load('training/model_10062024.pt'))
 optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.9)
 

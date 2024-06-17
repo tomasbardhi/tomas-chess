@@ -29,7 +29,8 @@ class MoveRequest(BaseModel):
 
 model_path = 'training/model_05062024.pt' 
 model = NNModel(input_channels, num_res_blocks, num_actions)
-model.load_state_dict(torch.load(model_path))
+#set model + model path to start the network with the model
+#model.load_state_dict(torch.load(model_path))
 model.eval()    
 
 def count_defenders(board, square):
