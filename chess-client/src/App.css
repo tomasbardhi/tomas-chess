@@ -1,0 +1,66 @@
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 80%;
+  max-width: 800px;
+}
+
+.secondary-container {
+  display: flex;
+  flex-direction: column;
+  flex-direction: space;
+  justify-content: space-between;
+  align-items: center;
+  width: 20%;
+}
+
+.secondary-container ul {
+  list-style-type: none;
+  /* Remove bullet points */
+  padding: 0;
+}
+
+.action-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  min-width: 150px;
+  margin-top: 10px;
+  border: 1px solid rgb(15, 15, 15);
+  color: black;
+  border-radius: 3px;
+  transition: 0.2s all;
+}
+
+.action-button:hover {
+  cursor: pointer;
+  background-color: rgb(15, 15, 15);
+  color: white;
+}
+
+.fetching {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  margin-top: 10px;
+  min-width: 150px;
+  color: white;
+  border-radius: 3px;
+  border-color: rgb(172, 172, 172);
+  background-color: rgb(172, 172, 172);
+}
+
+.fetching:hover {
+  cursor: default;
+}
