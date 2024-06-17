@@ -75,6 +75,7 @@ class Game:
         print_file("self-learn", "")
         print_file("self-learn", "Board end:")
         print_file("self-learn", self.board)
+        print_file("self-learn", self.board.fen())
         print_file("self-learn", "")
         print_file("game", "")
         if self.board.is_checkmate():

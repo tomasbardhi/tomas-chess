@@ -6,10 +6,10 @@ logger = logging.getLogger(__name__)
 
 args = {
     'C': 2,
-    'num_searches': 300,
-    'num_iterations': 1,
-    'num_selfPlay_iterations': 1,
-    'num_epochs': 50,
+    'num_searches': 500,
+    'num_iterations': 100,
+    'num_selfPlay_iterations': 100,
+    'num_epochs': 5,
     'batch_size': 32
 }
 

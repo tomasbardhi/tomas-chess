@@ -23,19 +23,20 @@ class Trainer2:
         self.fen = fen
 
     def train_loop(self):
+        self.model.eval()
         memory = []
-        for _ in range(3):
+        for _ in range(args['num_selfPlay_iterations']):
             self.board = chess.Board(self.fen)
             mcts = MCTS(self.board, args, self.model)
             game = Game(self.board, mcts, self.model)
             memory += game.self_play()
 
         self.model.train()
-        for _ in range(50):
+        for _ in range(args['num_epochs']):
             self.train_single_game(memory)
  
-        torch.save(self.model.state_dict(), f"training/batch_model.pt")
-        torch.save(self.optimizer.state_dict(), f"training/batch_optimizer.pt")
+        torch.save(self.model.state_dict(), f"training/model_10062024.pt")
+        torch.save(self.optimizer.state_dict(), f"training/optimizer_10062024.pt")
 
     def create_policy_tensor(self, position):
         policy = torch.zeros(4672)

@@ -16,7 +16,7 @@ def clear_outputs():
     - moves: logs each move of a game
 '''
 def print_file(filename, text):
-    if filename == "game" or filename == "mmoves" or filename == "self-learn":
+    if filename == "ggame" or filename == "mmoves" or filename == "self-learn":
         with open("outputs/"+filename+".txt", 'a') as file:
             if not isinstance(text, str):
                 text = str(text)
@@ -42,7 +42,7 @@ def filter_policy(board, policy):
     
     return filtered_policy
 
-def filter_and_normalize_policy(board, policy):
+def filter_and_normalize_policy(board, policy, epsilon=1e-5):
     legal_moves = [move.uci() for move in board.legal_moves]
 
     # keep only legal moves
@@ -53,7 +53,10 @@ def filter_and_normalize_policy(board, policy):
 
     # normalization
     sum_probabilities = sum(probabilities)
-    normalized_probabilities = [prob / sum_probabilities for prob in probabilities]
+    if(sum_probabilities == 0):
+        normalized_probabilities = [epsilon for prob in probabilities]
+    else:
+        normalized_probabilities = [prob / sum_probabilities for prob in probabilities]
 
     # new filtered normalized policy
     normalized_policy = list(zip([move for move, _ in filtered_policy], normalized_probabilities))

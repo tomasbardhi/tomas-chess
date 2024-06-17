@@ -12,11 +12,10 @@ from utils import filter_and_normalize_policy
 import numpy as np
 from printUtils import print_channels
 
-
 def test_model(fen):
-    model_path = 'training/batch_model.pt' 
+    #model_path = 'training/model_10062024.pt' 
     model = NNModel(input_channels, num_res_blocks, num_actions)
-    model.load_state_dict(torch.load(model_path))
+    #model.load_state_dict(torch.load(model_path))
     model.eval()
     board = chess.Board(fen)
 
@@ -61,6 +60,20 @@ def test_model(fen):
     print(board)
     print("")
 
+def test_mcts(fen):
+    board = chess.Board(fen)
+    model_path = 'training/batch_model.pt' 
+    model = NNModel(input_channels, num_res_blocks, num_actions)
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
+    mcts = MCTS(board, args, model)
+    print(board)
+    model_prediction = mcts.search()
+    mcts_probs = model_prediction[0]
+    move = max(mcts_probs, key=lambda x: x[1])[0]
+    print(board)
+    print(move)
+
 # clear output files
 clear_outputs()
 
@@ -88,34 +101,45 @@ trainer = Trainer(optimizer, fen)
 #trainer.learn()
 #trainer.train_single_position(board)
 
-#test_model()
+test_model('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
+
+# test_mcts("7k/4Q3/5K2/8/8/8/8/8 w - - 0 1")
+#test_mcts("7k/3Q4/5K2/8/8/8/8/8 w - - 0 1")
+
+#test_model('7k/4Q3/5K2/8/8/8/8/8 w - - 0 1')
+#test_model('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
+#test_model('7k/1Q6/5K2/8/8/8/8/8 w - - 0 1')
+#test_model('7k/Q7/5K2/8/8/8/8/8 w - - 0 1')
+#test_model('7k/8/5K2/8/8/8/8/6Q1 w - - 0 1')
 
 ### ------------------- ------------------------------------------------------------------------------------------------------------------
 
-fen = '7k/4Q3/5K2/8/8/8/8/8 w - - 0 1'  # e7g7 is checkmate for white
+#fen = '7k/4Q3/5K2/8/8/8/8/8 w - - 0 1'  # e7g7 is checkmate for white
+fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 model = NNModel(input_channels, num_res_blocks, num_actions)
-#model.apply(init_weights)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
+model.load_state_dict(torch.load('training/model_10062024.pt'))
+optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.9)
 
 trainer = Trainer2(model, optimizer, scheduler, fen)
 
-policy_target = torch.zeros(1, 4672)
-policy_target[0, 3825] = 1
-value_target = torch.tensor([1.0])
+#policy_target = torch.zeros(1, 4672)
+#policy_target[0, 3825] = 1
+#value_target = torch.tensor([1.0])
 
 ## trainer.train_single_position(torch.tensor(state_to_input(board)), policy_target, value_target)
 
-trainer.train_loop()
+#trainer.train_loop()
 
-trainer.model.eval()
-predicted_policy, predicted_value = trainer.model(torch.tensor(state_to_input(board)))
-print(f"Predicted Policy: {predicted_policy}")
-print(f"Predicted Value: {predicted_value}")
+#trainer.model.eval()
+#predicted_policy, predicted_value = trainer.model(torch.tensor(state_to_input(board)))
+#print(f"Predicted Policy: {predicted_policy}")
+#print(f"Predicted Value: {predicted_value}")
 
-test_model(fen)
-fen = '7k/3Q4/5K2/8/8/8/8/8 w - - 0 1'
-test_model(fen)
+#test_model(fen)
+#fen = '7k/3Q4/5K2/8/8/8/8/8 w - - 0 1'
+#test_model(fen)
+
 
 ### ------ train on one position ------------------------------------------------------
 

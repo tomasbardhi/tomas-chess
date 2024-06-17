@@ -22,7 +22,7 @@ class MCTSNode:
         #self.untried_moves = list(board.legal_moves)
 
         self.visits = 0
-        self.wins = 0
+        self.value = 0
 
     # a node is fully expanded when it has children (when we expand once, we expand in every direction so its either 0 or all children)
     def is_fully_expanded(self):
@@ -40,13 +40,13 @@ class MCTSNode:
     # calculate uct for every child and select child with best uct score
     def select(self):
         best_child = None
-        best_uct = -np.inf
+        best_uct = None
         print_file("game", "")
         print_file("game", "\t\tChildren: ")
         for child in self.children:
             uct = self.get_uct(child)
             print_file("game", "\t\t\tChild "+str(child.move)+" has uct: " + str(uct) + " and probability: " + str(child.prior))
-            if uct > best_uct:
+            if best_uct is None or uct > best_uct:
                 best_child = child
                 best_uct = uct
         
@@ -66,7 +66,7 @@ class MCTSNode:
         print_file("game", "")
 
         for move_uci, prob in policy:
-            if prob > 0:
+            if prob >= 0:
                 # create Move object
                 move = chess.Move.from_uci(move_uci)
                 # copy board and make the move
@@ -106,9 +106,12 @@ class MCTSNode:
         return 0.5
     '''
 
-    # update all wins and visits of each parent node starting from the last node
+    # update value and visits of each parent node starting from the last node
     def backpropagate(self, result):
-        self.wins += result
+        if(result == -1):
+            self.value = -np.inf
+        else:
+            self.value += result
         self.visits += 1
         if self.parent is not None:
             self.parent.backpropagate(result)
@@ -119,15 +122,15 @@ class MCTSNode:
         if child.visits == 0:
             return float('inf')
 
-        winrate = child.wins / child.visits
+        winrate = child.value / child.visits
         exploration = self.args['C'] * math.sqrt(math.log(self.visits) / child.visits)
         return winrate + exploration
     '''
-        
+
     # revisited ucb for alphazero -> upper confidence bound applied to trees
-    def get_uct(self, child):
-        q = child.wins / child.visits if child.visits > 0 else 0
+    def get_uct(self, child, epsilon=1e-5):
+        q = child.value / child.visits if child.visits > 0 else 0
         # total visits of all siblings + current child
         total_visits = sum(parent.visits for parent in self.children)
-        uct = q + self.args['C'] * child.prior * math.sqrt(total_visits) / (1 + child.visits)
+        uct = q + self.args['C'] * (child.prior + epsilon) * math.sqrt((total_visits) / (1 + child.visits))
         return uct
