@@ -65,7 +65,7 @@ const App = () => {
     setIsUserTurn(false);
     setIsFetching(true);
 
-    const response = await fetch('http://localhost:8000/move4/', {
+    const response = await fetch('http://localhost:8000/move/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
