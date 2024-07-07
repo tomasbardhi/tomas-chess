@@ -36,7 +36,7 @@ model.eval()
 def count_defenders(board, square):
     piece = board.piece_at(square)
     if piece is None:
-        raise ValueError("There is no piece on the given square")
+        return 1
     
     piece_color = piece.color
 
@@ -102,6 +102,12 @@ async def get_best_move(request: MoveRequest):
     for move_prob in sorted_mcts_probs:
         move = chess.Move.from_uci(move_prob[0])
         print(f"Move: {move}, Probability: {move_prob[1]}")
+
+
+    move = max(sorted_mcts_probs, key=lambda x: x[1])
+
+    if move[1] > 0.9:
+        return {"move": move[0]}
 
     for move_prob in sorted_mcts_probs:
         move = chess.Move.from_uci(move_prob[0])
